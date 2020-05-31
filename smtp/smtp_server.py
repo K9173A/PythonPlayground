@@ -22,7 +22,9 @@ class Server(smtpd.SMTPServer):
 
 
 def main():
-    server = Server('127.0.0.1', 1025)
+    # Unencrypted (default) = 25
+    # TLS = 587
+    server = Server('127.0.0.1', 25)
     server.run()
 
 
