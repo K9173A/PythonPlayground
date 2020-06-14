@@ -119,8 +119,19 @@ def black_and_white(f, *channels):
     return (f(channels),) * 3
 
 
-def sepia(r, g, b):
-    pass  # TODO
+def sepia(r):
+    """
+    Применяет эффект сепии - коричнево-оранжевые тона.
+    В данном варианте учитывается только красный канал.
+    Он берётся за 100% и от него выстраивается отношение других каналов.
+    На Википедии указано соотношение RGB: (112. 66. 20), соответственно
+    выведены соотношения:
+    g: 66 / 112 = 0.5892
+    b: 20 / 112 = 0.1785
+    :param r:
+    :return: RBG с эффектом сепии.
+    """
+    return r, int(r * 0.5892), int(r * 0.1785)
 
 
 def main():
@@ -156,6 +167,9 @@ def main():
     # image_editor.apply(max_black_and_white_filter)
     # Усреднённый вариант
     # image_editor.apply(avg_black_and_white_filter)
+
+    # Сепия
+    # image_editor.apply(sepia)
 
 
 if __name__ == '__main__':
