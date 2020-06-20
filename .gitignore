@@ -133,3 +133,6 @@ dmypy.json
 
 # secrets
 secrets.json
+
+# data for analysis
+working-data/
