@@ -12,7 +12,7 @@ class Company:
                 'logo': self.logo}
 
 
-class Transitions:
+class Transition:
     def __init__(self, src, dst, n):
         self.src = src
         self.dst = dst
