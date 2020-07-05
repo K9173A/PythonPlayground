@@ -61,8 +61,6 @@ class Game:
         y = int(self.height_cell_count / 2)
 
         while self.is_executing:
-            print(x, y)
-
             # Цвет текущей клетки
             current_cell_color = self.board.get_cell_color(x, y)
 
@@ -83,7 +81,7 @@ class Game:
             self.board.set_cell_color(x, y, color)
 
             # Обновляем координаты
-            x, y = self.get_new_position(x, y, turn)
+            x, y = self.check_bounds(*self.get_new_position(x, y, turn))
 
             # Обновляем координаты
             self.direction = self.get_new_direction(turn)
@@ -92,7 +90,7 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.is_executing = False
 
-            time.sleep(0.5)
+            time.sleep(0.01)
 
         pygame.quit()
 
@@ -156,6 +154,19 @@ class Game:
                 raise ValueError('Incorrect direction!')
         else:
             raise ValueError('Incorrect turn!')
+
+    def check_bounds(self, x, y):
+        if x < 0:
+            x = self.width_cell_count - 1
+        elif x >= self.width_cell_count:
+            x = 0
+
+        if y < 0:
+            y = self.height_cell_count - 1
+        elif y >= self.height_cell_count:
+            y = 0
+
+        return x, y
 
 
 def main():
