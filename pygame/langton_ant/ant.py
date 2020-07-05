@@ -22,6 +22,10 @@ class Turn:
 class Color:
     WHITE = (255, 255, 255)
     BLACK = (0, 0, 0)
+    RED = (255, 0, 0)
+    GREEN = (0, 255, 0)
+    BLUE = (0, 0, 255)
+    YELLOW = (255, 255, 0)
 
 
 class Board:
@@ -56,6 +60,14 @@ class Game:
 
         self.direction = Direction.UP
 
+        self.logic = {
+            Color.WHITE: (Turn.LEFT, Color.BLUE),
+            Color.BLUE: (Turn.LEFT, Color.RED),
+            Color.RED: (Turn.RIGHT, Color.GREEN),
+            Color.GREEN: (Turn.LEFT, Color.YELLOW),
+            Color.YELLOW: (Turn.RIGHT, Color.WHITE)
+        }
+
     def run(self):
         x = int(self.width_cell_count / 2)
         y = int(self.height_cell_count / 2)
@@ -64,8 +76,7 @@ class Game:
             # Цвет текущей клетки
             current_cell_color = self.board.get_cell_color(x, y)
 
-            # Обновляем цвет на противоположный
-            color = self.get_new_color(current_cell_color)
+            turn, color = self.logic[current_cell_color]
 
             pygame.draw.rect(self.screen, color, (
                 x * self.cell_size,
@@ -76,7 +87,7 @@ class Game:
             pygame.display.flip()
 
             # Исходя из текущего цвета (current_cell_color) определяем, куда поворачивать.
-            turn = self.get_new_turn(current_cell_color)
+            # turn = self.get_new_turn(current_cell_color)
 
             self.board.set_cell_color(x, y, color)
 
@@ -93,22 +104,6 @@ class Game:
             time.sleep(0.01)
 
         pygame.quit()
-
-    def get_new_color(self, color):
-        if color == Color.WHITE:
-            return Color.BLACK
-        elif color == Color.BLACK:
-            return Color.WHITE
-        else:
-            raise ValueError('Incorrect color!')
-
-    def get_new_turn(self, color):
-        if color == Color.WHITE:
-            return Turn.RIGHT
-        elif color == Color.BLACK:
-            return Turn.LEFT
-        else:
-            raise ValueError('Incorrect color!')
 
     def get_new_direction(self, turn):
         new_direction = self.direction
