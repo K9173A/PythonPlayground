@@ -1,6 +1,6 @@
 import os
 
-from sqlalchemy import create_engine, orm, sql, text
+from sqlalchemy import create_engine, orm, sql, text, dialects
 
 from models import BaseModel, Person
 
@@ -21,7 +21,10 @@ session.commit()
 
 query = sql.select([Person]).where(Person.first_name == 'Ivan')
 
-print(str(query))
+# str() выведет sql-запрос в обычной форме. Чтобы запрос был заполнен данными, нужно выбрать диалект.
+# В случае с sqlite было `WHERE person.first_name = ?` - вопросительный знак, особенность sqlite.
+# compile_kwargs - чтобы вместо вопросительного знака подставились значения. В нашем случае `Ivan`.
+print(query.compile(dialect=dialects.sqlite.dialect(), compile_kwargs={'literal_binds': True}))
 
 connection = engine.connect()
 results = connection.execute(query).fetchall()
