@@ -20,3 +20,18 @@ sorted_data = [
 
 for r in sorted_data:
     print(r)
+    
+# Вот этот вариант точно был протестирован на Python2
+data2 = [
+    {'id': 1, 'name': 'Andrew'},
+    {'id': 1, 'name': 'Mike'},
+    {'id': 3, 'name': 'John'},
+    {'id': 2, 'name': 'Kyle'},
+    {'id': 1, 'name': 'Albert'},
+    {'id': 3, 'name': 'Kate'}
+]
+
+sorted_data2 = [list(g) for k, g in groupby(v, lambda s: s['id'])]
+
+print(sorted_data2)
+
