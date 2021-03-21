@@ -1,7 +1,10 @@
 # coding=utf-8
+import collections
 import urllib2
 import re
+
 from bs4 import BeautifulSoup
+
 
 response = urllib2.urlopen('https://www.iana.org/domains/root/db')
 parsed_html = BeautifulSoup(response.read(), features='html.parser')
@@ -17,3 +20,10 @@ for span in spans:
     # А-Яа-яёЁ
     if pattern.match(domain):
         matched.append(domain[1:])
+
+
+domains_length = [len(span.find('a').getText()) - 1 for span in spans]
+
+counter = collections.Counter(domains_length)
+for key, value in counter.iteritems():
+    print(key, value)
