@@ -2,6 +2,7 @@
 Генерация sql-скрипта с insert-командами.
 """
 import json
+import multiprocessing
 import random
 import os
 import types
@@ -11,6 +12,10 @@ from faker import Faker
 
 fake = Faker()
 Faker.seed(0)
+
+
+def serialize_dict(d):
+    return "'" + str(d).replace('\'', '"') + "'"
 
 
 class FakeDataGenerator:
@@ -38,10 +43,23 @@ class FakeDataGenerator:
 
     @staticmethod
     def generate_bool():
+        """
+        Генерирует строковую интерпретацию boolean, т.к. именно в такой форме нужно записать
+        её в insert-скрипт, чтобы PostgreSQL воспринял значение.
+        """
         return random.choice(['true', 'false'])
 
+    @staticmethod
+    def generate_choice_with_probabilities(**choices):
+        """
+        В Python3 появилась возможность задавать вероятность выбора (2-м параметром).
+        В контексте генерации данных для БД это необходимо, что число удалённых операторов
+        было максимум 20% от общего числа.
+        """
+        return random.choices(choices.keys(), choices.values())
 
-def main(schema, table, configuration, limit):
+
+def generate_data_for_table(schema, table, configuration, limit):
     columns = ', '.join(configuration.keys())
 
     rows = [
@@ -65,10 +83,10 @@ def main(schema, table, configuration, limit):
 
             if isinstance(result, int):
                 result = str(result)
-            elif isinstance(result, str) and result not in ['NULL', 'true', 'false']:
+            elif isinstance(result, str) and result not in ['NULL', 'null', 'true', 'false']:
                 result = '\'' + result + '\''
             elif isinstance(result, dict):
-                result = "'" + str(result).replace('\'', '"') + "'"
+                result = serialize_dict(result)
 
             row.append(result)
 
@@ -87,17 +105,87 @@ def main(schema, table, configuration, limit):
         f.write('\n'.join(rows))
 
 
+def generate_data_for_tables(*table_configs):
+    with multiprocessing.Pool(processes=len(table_configs)) as pool:
+        pool.starmap(generate_data_for_table, table_configs)
+
+
 if __name__ == '__main__':
-    main(schema='webim_service_pro_dev',
-         table='chatdepartment',
-         configuration={
-             'departmentid': FakeDataGenerator.generate_increment(from_=12),
-             'departmentkey': lambda: fake.company(),
-             'departmentorder': FakeDataGenerator.generate_increment(from_=12),
-             'departmentgeo': 'NULL',
-             'isprivate': 'false',
-             'ishidden': 'false',
-             'config': FakeDataGenerator.generate_config(),
-             'deleted': 'false'
-         },
-         limit=100)
+    generate_data_for_tables(
+        [
+            'webim_service_pro_dev',
+            'chatdepartment',
+            {
+                'departmentid': FakeDataGenerator.generate_increment(from_=12),
+                'departmentkey': lambda: fake.company(),
+                'departmentorder': FakeDataGenerator.generate_increment(from_=12),
+                'departmentgeo': 'NULL',
+                'isprivate': 'false',
+                'ishidden': 'false',
+                'config': FakeDataGenerator.generate_config(),
+                'deleted': 'false'
+            },
+            100
+        ],
+        [
+            'webim_site',
+            'chatoperator',
+            {
+                'operatorid': FakeDataGenerator.generate_increment(from_=1),
+                'fullname': lambda: fake.full_name(),
+                'email': lambda: fake.email(),
+                'created': '2020-03-03 17:51:53.523787+03',
+                'password': 'f4eeddf4451523a0e460e4925b24ea3c',
+                'recoverytoken': 'NULL',
+                'recoverytime': 'NULL',
+                'deleted': FakeDataGenerator.generate_choice_with_probabilities(),
+                'operatororder': lambda: fake.pyint(min_value=1, max_value=2000),
+                'avatar': 'NULL',
+                'login': 'NULL',
+                'sip': 'NULL',
+                'sip_password': 'NULL',
+                'answer': 'NULL',
+                'subscribed': 0,
+                'config': serialize_dict({
+                    'answers': {'ru': []},
+                    'max_chats_per_operator': 'null',
+                    'backend_locale': 'ru',
+                    'new_visitor_notification': 'null',
+                    'additional_info': '',
+                    'title': 'null'
+                }),
+                'passwordmodified': '2020-03-03 17:51:53.523787+03',
+                'officeid': 'NULL'
+            },
+            100
+        ],
+        [
+            'webim_service_pro_dev',
+            'chatoperatordepartment',
+            {
+                'operatordepartmentid': FakeDataGenerator.generate_increment(from_=1),
+                'operatorid': None,  # todo: выбор из тех id, которые в таблице chatoperatod
+                'departmentid': None,  # todo: выбор из тех id, которые в таблице chatdepartment
+                'priority': lambda: fake.pyint(min_value=1, max_value=100),
+                'supervisor': 'false'
+            },
+            100
+        ],
+        [
+            'webim_service_pro_dev',
+            'chatthreadhistory',
+            {
+                'chatthreadhistoryid': FakeDataGenerator.generate_increment(from_=1),
+                'threadid': None,
+                'number': None,
+                'dtm': None,
+                'state': None,
+                'operatorid': None,
+                'departmentid': None,
+                'event': None,
+                'locate': 'ru',
+                'officeid': 'NULL'
+            },
+            100
+        ]
+    )
