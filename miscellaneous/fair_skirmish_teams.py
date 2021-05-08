@@ -36,17 +36,17 @@ class Team:
 
 class Balancer:
     GENERALS = [
-        General('USA Air', 5),
-        General('USA Superweapon', 4),
-        General('USA Laser', 3),
-        General('GLA Demolition', 3),
+        General('USA Air', 6),
+        General('USA Superweapon', 5),
+        General('USA Laser', 4),
+        General('GLA Demolition', 4),
+        General('USA', 4),
         General('GLA Toxin', 3),
-        General('USA', 2),
-        General('GLA', 2),
+        General('GLA', 3),
         General('China Tank', 2),
-        General('China Nuke', 1),
+        General('GLA Stealth', 2),
+        General('China Nuke', 2),
         General('China', 1),
-        General('GLA Stealth', 1),
         General('China Infantry', 1)
     ]
 
